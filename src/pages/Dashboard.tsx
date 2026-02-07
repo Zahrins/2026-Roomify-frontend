@@ -98,7 +98,10 @@ export default function Dashboard() {
             <a className="text-white">Dashboard</a>
           </div>
 
-          <div className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+          <div
+            className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+            onClick={() => navigate("/buildingRooms")}
+          >
             <span className="material-symbols-outlined">apartment</span>
             <a className="text-black">Daftar Gedung</a>
           </div>
@@ -135,7 +138,10 @@ export default function Dashboard() {
           <a className="text-white">Dashboard</a>
         </div>
 
-        <div className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+        <div
+          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          onClick={() => navigate("/buildingRooms")}
+        >
           <span className="material-symbols-outlined">apartment</span>
           <a className="text-black">Daftar Gedung</a>
         </div>
@@ -168,7 +174,9 @@ export default function Dashboard() {
               <a className="font-semibold">Peminjaman Baru</a>
               <p className="text-sm text-slate-600">Menunggu persetujuan</p>
             </div>
-            <div className="text-[30px] font-semibold">{stats.peminjamanBaru}</div>
+            <div className="text-[30px] font-semibold">
+              {stats.peminjamanBaru}
+            </div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#DDEFE0] border border-green-400">
             <div className="flex flex-col gap-2">
@@ -178,7 +186,9 @@ export default function Dashboard() {
               <a className="font-semibold">Ruang Terpakai</a>
               <p className="text-sm text-slate-600">Hari ini</p>
             </div>
-            <div className="text-[30px] font-semibold">{stats.ruangTerpakai}</div>
+            <div className="text-[30px] font-semibold">
+              {stats.ruangTerpakai}
+            </div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#F8DDE0] border border-red-400">
             <div className="flex flex-col gap-2">
@@ -188,7 +198,9 @@ export default function Dashboard() {
               <a className="font-semibold">Jadwal Bentrok</a>
               <p className="text-sm text-slate-600">Perlu ditangani</p>
             </div>
-            <div className="text-[30px] font-semibold">{stats.jadwalBentrok}</div>
+            <div className="text-[30px] font-semibold">
+              {stats.jadwalBentrok}
+            </div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#D8E8F8] border border-blue-400">
             <div className="flex flex-col gap-2">
@@ -198,7 +210,9 @@ export default function Dashboard() {
               <a className="font-semibold">Total Peminjaman</a>
               <p className="text-sm text-slate-600">keseluruhan</p>
             </div>
-            <div className="text-[30px] font-semibold">{stats.totalPeminjaman}</div>
+            <div className="text-[30px] font-semibold">
+              {stats.totalPeminjaman}
+            </div>
           </div>
         </div>
 
@@ -295,7 +309,9 @@ export default function Dashboard() {
                   >
                     folder_open
                   </span>
-                  <p className='text-slate-600'>Tidak ada jadwal untuk tanggal {filterDate}</p>
+                  <p className="text-slate-600">
+                    Tidak ada jadwal untuk tanggal {filterDate}
+                  </p>
                   <button
                     onClick={() => setFilterDate("")}
                     className="text-blue-500 underline text-sm"

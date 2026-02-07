@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
 import Dashboard from './pages/Dashboard';
 import BookingForm from './pages/BookingForm';
+import BuildingRooms from './pages/BuildingRooms';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -11,6 +12,7 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/BookingForm" element={<BookingForm />} />
+        <Route path="/BuildingRooms" element={<BuildingRooms />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

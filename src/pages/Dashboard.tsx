@@ -111,7 +111,7 @@ export default function Dashboard() {
           <a className="text-white">Riwayat</a>
         </div>
         <button
-          onClick={() => navigate('/PinjamForm')}
+          onClick={() => navigate('/bookingForm')}
           className="flex justify-center items-center bg-[#1D546D] p-2 gap-2 rounded-lg cursor-pointer text-white hover:opacity-90 transition"
         >
           <span className="material-symbols-outlined">add_circle</span>
@@ -148,7 +148,7 @@ export default function Dashboard() {
           <a className="text-white">Riwayat</a>
         </div>
         <button
-          onClick={() => navigate('/PinjamForm')}
+          onClick={() => navigate('/BookingForm')}
           className="mt-auto flex justify-center items-center gap-2 bg-[#1D546D] p-4 rounded-lg cursor-pointer text-white hover:opacity-90 transition"
         >
           <span className="material-symbols-outlined">add_circle</span>

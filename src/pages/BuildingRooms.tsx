@@ -3,18 +3,59 @@ import "../index.css";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+interface Room {
+  status: string;
+  nama: string;
+  tipe: string;
+  kapasitas: number;
+}
+
+interface Building {
+  nama: string;
+  rooms: Room[];
+}
+
 export default function BuildingRooms() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
-    tanggal: "",
+    tanggal: new Date().toISOString().split("T")[0], 
     tipe: "All",
   });
-  const [stats, setStats] = useState({
-    ruangKosong: 0,
-    ruangTerpakai: 0,
-  });
+
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const filteredBuildings = buildings
+    .map((b) => ({
+      ...b,
+      rooms:
+        filters.tipe === "All"
+          ? b.rooms
+          : b.rooms.filter((r) => r.tipe === filters.tipe),
+    }))
+    .filter((b) => b.rooms.length > 0);
+
+  useEffect(() => {
+    const url = `https://localhost:7252/api/buildings?tanggal=${filters.tanggal}`;
+
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error("Gagal mengambil data");
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Data dari ASP.NET:", data);
+        setBuildings(data);
+      })
+      .catch((err) => console.error("Error Fetching:", err));
+  }, [filters.tanggal]); 
+
+  const getStats = (rooms: Room[] = []) => {
+    const ruangKosong = rooms.filter((r) => r.status === "kosong").length;
+    const ruangTerpakai = rooms.filter((r) => r.status === "terpakai").length;
+
+    return { ruangKosong, ruangTerpakai };
+  };
 
   return (
     <div className="h-screen w-full flex lg:flex-row flex-col">
@@ -149,149 +190,57 @@ export default function BuildingRooms() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
-                  <span className="material-symbols-outlined">domain</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">Gedung D3</h2>
-                  <p className="text-sm text-gray-500">Area Utara</p>
-                </div>
-              </div>
+            {filteredBuildings.map((gedung) => {
+              const { ruangKosong, ruangTerpakai } = getStats(gedung.rooms);
 
-              <div className="flex gap-4 mt-4">
-                <div className="flex-1 bg-green-50 text-green-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">{stats.ruangKosong}</p>
-                  <p className="text-sm">Ruang Kosong</p>
-                </div>
-                <div className="flex-1 bg-red-50 text-red-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">{stats.ruangTerpakai}</p>
-                  <p className="text-sm">Ruang Terpakai</p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 cursor-pointer relative">
-                  <span className="lg:hidden absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full" />
-                  <div className="flex items-center gap-2">
-                    <span className="hidden lg:inline-block w-2.5 h-2.5 bg-green-500 rounded-full" />
-                    <p className="font-semibold text-sm mt-2 lg:mt-0">R. 101</p>
+              return (
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
+                      <span className="material-symbols-outlined">domain</span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold">{gedung.nama}</h2>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 lg:mt-0">
-                    Kelas • 40 org
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
-                  <span className="material-symbols-outlined">domain</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">Gedung D4</h2>
-                  <p className="text-sm text-gray-500">Area Timur</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-4">
-                <div className="flex-1 bg-green-50 text-green-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">3</p>
-                  <p className="text-sm">Ruang Kosong</p>
-                </div>
-                <div className="flex-1 bg-red-50 text-red-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">1</p>
-                  <p className="text-sm">Ruang Terpakai</p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 cursor-pointer relative">
-                  <span className="lg:hidden absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full" />
-                  <div className="flex items-center gap-2">
-                    <span className="hidden lg:inline-block w-2.5 h-2.5 bg-green-500 rounded-full" />
-                    <p className="font-semibold text-sm mt-2 lg:mt-0">R. 101</p>
+                  <div className="flex gap-4 mt-4">
+                    <div className="flex-1 bg-green-50 text-green-600 rounded-xl p-4 text-center">
+                      <p className="text-2xl font-bold">{ruangKosong}</p>
+                      <p className="text-sm">Ruang Kosong</p>
+                    </div>
+                    <div className="flex-1 bg-red-50 text-red-600 rounded-xl p-4 text-center">
+                      <p className="text-2xl font-bold">{ruangTerpakai}</p>
+                      <p className="text-sm">Ruang Terpakai</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 lg:mt-0">
-                    Kelas • 40 org
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
-                  <span className="material-symbols-outlined">domain</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">Gedung SAW</h2>
-                  <p className="text-sm text-gray-500">Area Timur</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-4">
-                <div className="flex-1 bg-green-50 text-green-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">3</p>
-                  <p className="text-sm">Ruang Kosong</p>
-                </div>
-                <div className="flex-1 bg-red-50 text-red-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">1</p>
-                  <p className="text-sm">Ruang Terpakai</p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 cursor-pointer relative">
-                  <span className="lg:hidden absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full" />
-                  <div className="flex items-center gap-2">
-                    <span className="hidden lg:inline-block w-2.5 h-2.5 bg-green-500 rounded-full" />
-                    <p className="font-semibold text-sm mt-2 lg:mt-0">R. 101</p>
+                  <div className="mt-4 grid grid-cols-3 gap-3 overflow-y-auto pr-2">
+                    {gedung.rooms.map((room, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 cursor-pointer relative"
+                      >
+                        <span
+                          className={`lg:hidden absolute top-2 right-2 w-2.5 h-2.5 rounded-full ${room.status === "kosong" ? "bg-green-500" : "bg-red-500"}`}
+                        />
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`hidden lg:inline-block w-2.5 h-2.5 rounded-full ${room.status === "kosong" ? "bg-green-500" : "bg-red-500"}`}
+                          />
+                          <p className="font-semibold text-sm mt-2 lg:mt-0">
+                            {room.nama}
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-4 lg:mt-0">
+                          {room.tipe} • {room.kapasitas} org
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 lg:mt-0">
-                    Kelas • 40 org
-                  </p>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
-                  <span className="material-symbols-outlined">domain</span>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">Gedung Pasca</h2>
-                  <p className="text-sm text-gray-500">Area Timur</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-4">
-                <div className="flex-1 bg-green-50 text-green-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">3</p>
-                  <p className="text-sm">Ruang Kosong</p>
-                </div>
-                <div className="flex-1 bg-red-50 text-red-600 rounded-xl p-4 text-center">
-                  <p className="text-2xl font-bold">1</p>
-                  <p className="text-sm">Ruang Terpakai</p>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <div className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 cursor-pointer relative">
-                  <span className="lg:hidden absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 rounded-full" />
-                  <div className="flex items-center gap-2">
-                    <span className="hidden lg:inline-block w-2.5 h-2.5 bg-green-500 rounded-full" />
-                    <p className="font-semibold text-sm mt-2 lg:mt-0">R. 101</p>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2 lg:mt-0">
-                    Kelas • 40 org
-                  </p>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>

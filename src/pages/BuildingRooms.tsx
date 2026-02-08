@@ -219,7 +219,7 @@ export default function BuildingRooms() {
                     {gedung.rooms.map((room, idx) => (
                       <div
                         key={idx}
-                        className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 cursor-pointer relative"
+                        className="bg-gray-50 rounded-xl py-3 px-1 hover:bg-gray-100 cursor-pointer relative"
                       >
                         <span
                           className={`lg:hidden absolute top-2 right-2 w-2.5 h-2.5 rounded-full ${room.status === "kosong" ? "bg-green-500" : "bg-red-500"}`}

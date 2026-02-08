@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 export default function BookingForm() {
   const [namaPeminjam, setNamaPeminjam] = useState("");
   const [noKontak, setNoKontak] = useState("");
-  const [tanggal, setTanggal] = useState("");
+  const [tanggal, setTanggal] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
   const [jamMulai, setJamMulai] = useState("");
   const [jamSelesai, setJamSelesai] = useState("");
   const [keperluan, setKeperluan] = useState("");
@@ -14,19 +17,50 @@ export default function BookingForm() {
   const [selectedBuilding, setSelectedBuilding] = useState("");
   const [selectedRoom, setSelectedRoom] = useState("");
   useEffect(() => {
-    fetch("http://localhost:5000/api/buildings")
-      .then((res) => res.json())
-      .then((data) => setBuildings(data))
-      .catch((err) => console.error(err));
-  }, []);
+    const controller = new AbortController();
+    async function loadBuildings() {
+      try {
+        const res = await fetch(
+          `https://localhost:7252/api/buildings?tanggal=${tanggal}`,
+          {
+            signal: controller.signal,
+          },
+        );
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        const normalized = data.map((b: any) => ({
+          id: b.id ?? b.Id,
+          nama: b.nama ?? b.Nama,
+          rooms: (b.rooms ?? b.Rooms ?? []).map((r: any) => ({
+            id: r.id ?? r.Id,
+            nama: r.nama ?? r.Nama,
+          })),
+        }));
+        setBuildings(normalized);
+        setSelectedBuilding("");
+        setRooms([]);
+        setSelectedRoom("");
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("Gagal memuat gedung:", err);
+        }
+      }
+    }
+    loadBuildings();
+    return () => controller.abort();
+  }, [tanggal]);
+  
   useEffect(() => {
-    if (!selectedBuilding) return;
-
-    fetch(`http://localhost:5000/api/rooms?buildingId=${selectedBuilding}`)
-      .then((res) => res.json())
-      .then((data) => setRooms(data))
-      .catch((err) => console.error(err));
-  }, [selectedBuilding]);
+    const currentBuilding = buildings.find(
+      (b) => String(b.id) === String(selectedBuilding)
+    );
+    if (currentBuilding) {
+      setRooms(currentBuilding.rooms);
+    } else {
+      setRooms([]);
+    }
+    setSelectedRoom("");
+  }, [selectedBuilding, buildings]);
 
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -35,13 +69,13 @@ export default function BookingForm() {
 
   const handleConnect = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
     setLoading(true);
     try {
-      const response = await fetch("/api/bookingRoom", {
+      const response = await fetch("https://localhost:7252/api/Bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
         },
         body: JSON.stringify({
           namaPeminjam,
@@ -50,8 +84,8 @@ export default function BookingForm() {
           jamMulai,
           jamSelesai,
           keperluan,
-          buildingId: selectedBuilding,
-          roomId: selectedRoom,
+          buildingId: parseInt(selectedBuilding),
+          roomId: parseInt(selectedRoom),
         }),
       });
       const responseData = await response.json();
@@ -154,7 +188,7 @@ export default function BookingForm() {
                 <option value="">Pilih Gedung</option>
                 {buildings.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.name}
+                    {b.nama}
                   </option>
                 ))}
               </select>
@@ -173,7 +207,7 @@ export default function BookingForm() {
                 <option value="">Pilih Ruangan</option>
                 {rooms.map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.name}
+                    {r.nama}
                   </option>
                 ))}
               </select>

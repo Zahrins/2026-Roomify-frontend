@@ -93,6 +93,10 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  const [selectedBooking, setSelectedBooking] = useState<PeminjamanItem | null>(
+    null,
+  );
+
   const handleDelete = async (id: number) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
       try {
@@ -332,7 +336,7 @@ export default function Dashboard() {
                   <div className="flex gap-5 mt-3">
                     <span
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => navigate(`/detailBooking/${item.id}`)}
+                      onClick={() => setSelectedBooking(item)}
                     >
                       info
                     </span>
@@ -375,6 +379,68 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {selectedBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white w-[90%] max-w-3xl rounded-xl shadow-lg p-6 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+              onClick={() => setSelectedBooking(null)}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-2xl font-semibold mb-4">Detail Peminjaman</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-500">Nama Peminjam</p>
+                <p className="font-medium">{selectedBooking.namaPeminjam}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Status</p>
+                <span
+                  className={`inline-block mt-1 px-3 py-1 rounded-full text-xs
+            ${statusStyles[selectedBooking.status]}`}
+                >
+                  {selectedBooking.status}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Keperluan</p>
+                <p>{selectedBooking.keperluan}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Lokasi</p>
+                <p>{selectedBooking.lokasiPinjam}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Tanggal</p>
+                <p>{selectedBooking.tglPinjam}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Jam</p>
+                <p>{selectedBooking.jamPinjam}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => navigate(`/editBooking/${selectedBooking.id}`)}
+                className="px-4 py-2 rounded-lg bg-[#547792] text-white text-sm hover:opacity-90"
+              >
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 }

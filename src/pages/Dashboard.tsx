@@ -1,6 +1,6 @@
-import '../index.css';
+import "../index.css";
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function Dashboard() {
@@ -8,49 +8,80 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const statusStyles = {
-    'pending': 'bg-yellow-300 text-yellow-600 border border-yellow-600',
-    'approved': 'bg-blue-300 text-blue-600 border border-blue-600',
-    'in use': 'bg-yellow-300 text-yellow-600 border border-yellow-600',
-    'rejected': 'bg-red-300 text-red-600 border border-red-600',
-    'completed': 'bg-green-300 text-green-600 border border-green-600'
-  }
-  
+    pending: "bg-yellow-100 text-yellow-600 border border-yellow-200",
+    approved: "bg-blue-100 text-blue-600 border border-blue-200",
+    rejected: "bg-red-100 text-red-600 border border-red-200",
+  };
+
   type PeminjamanItem = {
     id: number;
     namaPeminjam: string;
-    status: 'pending' | 'approved' | 'in use' | 'rejected' | 'completed';
+    status: "pending" | "approved" | "rejected";
     keperluan: string;
     lokasiPinjam: string;
     tglPinjam: string;
     jamPinjam: string;
-    kapasitasRuang: number;
   };
+
   const [peminjaman, setPeminjaman] = useState<PeminjamanItem[]>([]);
   const [stats, setStats] = useState({
     peminjamanBaru: 0,
-    ruangTerpakai: 0,
-    jadwalBentrok: 0,
-    totalPeminjaman: 0
+    disetujui: 0,
+    ditolak: 0,
+    totalPeminjaman: 0,
   });
   const [filterDate, setFilterDate] = useState("");
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterDate(e.target.value);
   };
   const filteredItems = peminjaman.filter((item) => {
-  if (!filterDate) return true;
+    if (!filterDate) return true;
 
-  return item.tglPinjam === filterDate;
-});
+    return item.tglPinjam === filterDate;
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/dashboard');
+        const response = await fetch("https://localhost:7252/api/Bookings");
         const data = await response.json();
-        
-        setStats(data.summary);
-        setPeminjaman(data.items);
+
+        const buildingNames: { [key: number]: string } = {
+          1: "Gedung D3",
+          2: "Gedung D4",
+          3: "Gedung Pascasarjana",
+          4: "Gedung Theater",
+        };
+
+        const formattedData = data.map((item: any) => {
+          let formattedDate = "";
+          if (item.tanggal) {
+            formattedDate = item.tanggal.split(" ")[0];
+
+            if (formattedDate.includes("T")) {
+              formattedDate = formattedDate.split("T")[0];
+            }
+          }
+          return {
+            id: item.id,
+            namaPeminjam: item.namaPeminjam,
+            status: "pending",
+            keperluan: item.keperluan,
+            lokasiPinjam: buildingNames [item.buildingId] || `Gedung ${item.buildingId}`,
+            tglPinjam: formattedDate,
+            jamPinjam: `${item.jamMulai} - ${item.jamSelesai}`,
+          };
+        });
+
+        setPeminjaman(formattedData);
+
+        setStats({
+          peminjamanBaru: 0,
+          disetujui: formattedData.length,
+          ditolak: 0,
+          totalPeminjaman: formattedData.length,
+        });
       } catch (error) {
         console.error("Gagal mengambil data:", error);
       } finally {
@@ -61,11 +92,25 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-      const updatedData = peminjaman.filter(item => item.id !== id);
-      setPeminjaman(updatedData);
-      alert("Data berhasil dihapus!");
+      try {
+        const response = await fetch(
+          `https://localhost:7252/api/Bookings/${id}`,
+          {
+            method: "DELETE",
+          },
+        );
+
+        if (response.ok) {
+          setPeminjaman((prev) => prev.filter((item) => item.id !== id));
+          alert("Data berhasil dihapus dari database!");
+        } else {
+          alert("Gagal menghapus data di server.");
+        }
+      } catch (error) {
+        console.error("Error saat menghapus:", error);
+      }
     }
   };
 
@@ -183,24 +228,20 @@ export default function Dashboard() {
               <span className="material-symbols-outlined text-green-500">
                 check_circle
               </span>
-              <a className="font-semibold">Ruang Terpakai</a>
+              <a className="font-semibold">Disetujui</a>
               <p className="text-sm text-slate-600">Hari ini</p>
             </div>
-            <div className="text-[30px] font-semibold">
-              {stats.ruangTerpakai}
-            </div>
+            <div className="text-[30px] font-semibold">{stats.disetujui}</div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#F8DDE0] border border-red-400">
             <div className="flex flex-col gap-2">
               <span className="material-symbols-outlined text-red-500">
                 error
               </span>
-              <a className="font-semibold">Jadwal Bentrok</a>
+              <a className="font-semibold">Ditolak</a>
               <p className="text-sm text-slate-600">Perlu ditangani</p>
             </div>
-            <div className="text-[30px] font-semibold">
-              {stats.jadwalBentrok}
-            </div>
+            <div className="text-[30px] font-semibold">{stats.ditolak}</div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#D8E8F8] border border-blue-400">
             <div className="flex flex-col gap-2">
@@ -217,82 +258,91 @@ export default function Dashboard() {
         </div>
 
         <div className="mt-10">
-          <div className="flex justify-between items-center">
-            <h6 className="text-xl font-semibold mb-4 mt-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h6 className="text-xl font-semibold text-gray-800">
               Jadwal Peminjaman
             </h6>
-            <input
-              type="date"
-              className="h-9 rounded-lg border text-sm border-gray-300 px-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={filterDate}
-              onChange={handleDateChange}
-            />
-            {filterDate && (
-              <button
-                onClick={() => setFilterDate("")}
-                className="text-xs text-red-500 ml-2 bg-rose-400 rounded-lg p-1"
-              >
-                Clear Filter
-              </button>
-            )}
+
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                className="h-9 rounded-lg border border-gray-300 px-3 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={filterDate}
+                onChange={handleDateChange}
+              />
+
+              {filterDate && (
+                <button
+                  onClick={() => setFilterDate("")}
+                  className="h-9 rounded-lg px-3 text-xs font-medium
+                   text-rose-600 bg-rose-50 border border-rose-200
+                   hover:bg-rose-100 transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
-          <div className="mt-3 gap-4">
+
+          <div className="mt-5">
             {loading ? (
               <p>Memuat data...</p>
-            ) : peminjaman.length > 0 ? (
+            ) : filteredItems.length > 0 ? (
               filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-slate-50 border border-slate-600 rounded-lg p-5"
+                  className="mb-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-5 flex flex-row justify-between"
                 >
-                  <div className="flex flex-row gap-4 items-center">
-                    <a className="font-medium text-lg">{item.namaPeminjam}</a>
-                    <div
-                      className={`rounded-lg w-auto px-3 py-0 ${statusStyles[item.status] || "bg-gray-100 text-gray-600"}`}
-                    >
-                      {item.status}
+                  <div>
+                    <div className="flex flex-row gap-4 items-center">
+                      <a className="font-normal text-lg">{item.namaPeminjam}</a>
+                      <div
+                        className={`inline-flex items-center text-[12px] rounded-3xl w-auto px-3 py-1 ${statusStyles[item.status] || "bg-gray-100 text-gray-600"}`}
+                      >
+                        {item.status}
+                      </div>
+                    </div>
+                    <a className="text-slate-500 text-[13px]">
+                      {item.keperluan}
+                    </a>
+                    <div className="flex flex-row flex-wrap lg:gap-10 gap-4 py-2">
+                      <div className="flex text-slate-700 gap-2">
+                        <span className="material-symbols-outlined text-sm">
+                          location_on
+                        </span>
+                        <p className="text-sm">{item.lokasiPinjam}</p>
+                      </div>
+                      <div className="flex text-slate-700 gap-2">
+                        <span className="material-symbols-outlined text-sm">
+                          calendar_today
+                        </span>
+                        <p className="text-sm">{item.tglPinjam}</p>
+                      </div>
+                      <div className="flex text-slate-700 gap-2">
+                        <span className="material-symbols-outlined text-sm">
+                          clock_loader_40
+                        </span>
+                        <p className="text-sm">{item.jamPinjam}</p>
+                      </div>
                     </div>
                   </div>
-                  <a className="text-slate-500">{item.keperluan}</a>
-                  <div className="flex flex-row flex-wrap lg:gap-10 gap-4 border-b border-b-slate-300 py-4">
-                    <div className="flex text-slate-700 gap-2">
-                      <span className="material-symbols-outlined">
-                        location_on
-                      </span>
-                      <p>{item.lokasiPinjam}</p>
-                    </div>
-                    <div className="flex text-slate-700 gap-2">
-                      <span className="material-symbols-outlined">
-                        calendar_today
-                      </span>
-                      <p>{item.tglPinjam}</p>
-                    </div>
-                    <div className="flex text-slate-700 gap-2">
-                      <span className="material-symbols-outlined">
-                        clock_loader_40
-                      </span>
-                      <p>{item.jamPinjam}</p>
-                    </div>
-                    <div className="flex text-slate-700 gap-2">
-                      <span className="material-symbols-outlined">groups</span>
-                      <p>Kapasitas: {item.kapasitasRuang}</p>
-                    </div>
-                  </div>
+
                   <div className="flex gap-5 mt-3">
                     <span
-                      className="material-symbols-outlined text-blue-500 cursor-pointer hover:text-blue-700"
+                      className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
                       onClick={() => navigate(`/detailPinjam/${item.id}`)}
                     >
                       info
                     </span>
                     <span
-                      className="material-symbols-outlined text-yellow-500 cursor-pointer hover:text-yellow-700"
+                      className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
                       onClick={() => navigate(`/editPinjam/${item.id}`)}
                     >
                       edit
                     </span>
                     <span
-                      className="material-symbols-outlined text-red-500 cursor-pointer hover:text-red-700"
+                      className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
                       onClick={() => handleDelete(item.id)}
                     >
                       delete

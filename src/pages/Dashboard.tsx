@@ -2,6 +2,7 @@ import "../index.css";
 
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const [open, setOpen] = useState(false);
@@ -331,16 +332,16 @@ export default function Dashboard() {
                   <div className="flex gap-5 mt-3">
                     <span
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => navigate(`/detailPinjam/${item.id}`)}
+                      onClick={() => navigate(`/detailBooking/${item.id}`)}
                     >
                       info
                     </span>
-                    <span
+                    <Link
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => navigate(`/editPinjam/${item.id}`)}
+                      to={`/editBooking/${item.id}`}
                     >
                       edit
-                    </span>
+                    </Link>
                     <span
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
                       onClick={() => handleDelete(item.id)}

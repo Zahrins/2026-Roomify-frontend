@@ -28,7 +28,7 @@ export default function UserRegister() {
       }
 
       alert("Registration successful! Please login.");
-      navigate("/user-login");
+      navigate("/userLogin");
     } catch (err) {
       console.error(err);
       setError("Tidak dapat terhubung ke server.");

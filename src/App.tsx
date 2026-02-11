@@ -9,6 +9,7 @@ import UserLogin from "./pages/user/userLogin";
 import UserRegister from "./pages/user/userRegister";
 import LandingPage from "./pages/LandingPage";
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
+import DashboardUser from "./pages/user/DashboardUser";
 import BookingForm from "./pages/user/BookingForm";
 import BuildingRooms from "./pages/admin/BuildingRooms";
 import EditBooking from "./pages/user/EditBooking";
@@ -29,6 +30,7 @@ function App() {
         <Route path="/userRegister" element={<UserRegister />} />
 
         <Route path="/DashboardAdmin" element={<DashboardAdmin />} />
+        <Route path="/DashboardUser" element={<DashboardUser />} />
         <Route path="/BookingForm" element={<BookingForm />} />
         <Route path="/BuildingRooms" element={<BuildingRooms />} />
         <Route path="/editBooking/:id" element={<EditBooking />} />

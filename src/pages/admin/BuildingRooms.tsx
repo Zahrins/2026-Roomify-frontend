@@ -34,10 +34,21 @@ export default function BuildingRooms() {
     .filter((b) => b.rooms.length > 0);
 
   useEffect(() => {
-    const url = `https://localhost:7252/api/buildings?tanggal=${filters.tanggal}`;
+    const token = localStorage.getItem("token");
 
-    fetch(url)
+    const url = `https://localhost:7252/api/Buildings?tanggal=${filters.tanggal}`;
+
+    fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => {
+        if (res.status === 401) {
+          throw new Error("Sesi habis, silakan login kembali.");
+        }
         if (!res.ok) throw new Error("Gagal mengambil data");
         return res.json();
       })
@@ -45,8 +56,10 @@ export default function BuildingRooms() {
         console.log("Data dari ASP.NET:", data);
         setBuildings(data);
       })
-      .catch((err) => console.error("Error Fetching:", err));
-  }, [filters.tanggal]); 
+      .catch((err) => {
+        console.error("Error Fetching:", err);
+      });
+  }, [filters.tanggal]);
 
   const getStats = (rooms: Room[] = []) => {
     const ruangKosong = rooms.filter((r) => r.status === "kosong").length;
@@ -81,7 +94,7 @@ export default function BuildingRooms() {
 
           <div
             className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/dashboardAdmin")}
           >
             <span className="material-symbols-outlined">space_dashboard</span>
             <a className="text-black">Dashboard</a>
@@ -121,7 +134,7 @@ export default function BuildingRooms() {
 
         <div
           className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/dashboardAdmin")}
         >
           <span className="material-symbols-outlined">space_dashboard</span>
           <a className="text-black">Dashboard</a>

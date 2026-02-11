@@ -1,5 +1,3 @@
-import "../index.css";
-
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -156,7 +154,10 @@ export default function Dashboard() {
             <a className="text-black">Daftar Gedung</a>
           </div>
 
-          <div className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+          <div
+            className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+            onClick={() => navigate("/historyPage")}
+          >
             <span className="material-symbols-outlined">history</span>
             <a className="text-black">Riwayat</a>
           </div>
@@ -196,7 +197,10 @@ export default function Dashboard() {
           <a className="text-black">Daftar Gedung</a>
         </div>
 
-        <div className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+        <div
+          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          onClick={() => navigate("/historyPage")}
+        >
           <span className="material-symbols-outlined">history</span>
           <a className="text-black">Riwayat</a>
         </div>
@@ -440,7 +444,6 @@ export default function Dashboard() {
           </div>
         </div>
       )}
-      
     </div>
   );
 }

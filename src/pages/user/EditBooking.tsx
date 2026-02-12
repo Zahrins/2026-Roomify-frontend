@@ -122,7 +122,7 @@ export default function EditBooking() {
         setIsSuccess(true);
         setTimeout(() => {
           setIsSuccess(false);
-          navigate("/dashboard");
+          navigate("/dashboardUser");
           setLoading(false);
         }, 3000);
       } else {

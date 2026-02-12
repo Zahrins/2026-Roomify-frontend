@@ -20,15 +20,18 @@ export default function DashboardUser() {
     lokasiPinjam: string;
     tglPinjam: string;
     jamPinjam: string;
+    buildingId: number;
+    room?: {
+      id: number;
+      nama: string;
+      status: string;
+      tipe: string;
+      kapasitas: number;
+    };
   };
 
   const [peminjaman, setPeminjaman] = useState<PeminjamanItem[]>([]);
-  const [stats, setStats] = useState({
-    peminjamanBaru: 0,
-    disetujui: 0,
-    ditolak: 0,
-    totalPeminjaman: 0,
-  });
+  
   const [filterDate, setFilterDate] = useState("");
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterDate(e.target.value);
@@ -49,8 +52,8 @@ export default function DashboardUser() {
         const buildingNames: { [key: number]: string } = {
           1: "Gedung D3",
           2: "Gedung D4",
-          3: "Gedung Pascasarjana",
-          4: "Gedung Theater",
+          3: "Gedung SAW",
+          4: "Gedung Pascasarjana",
         };
 
         const formattedData = data.map((item: any) => {
@@ -71,17 +74,12 @@ export default function DashboardUser() {
               buildingNames[item.buildingId] || `Gedung ${item.buildingId}`,
             tglPinjam: formattedDate,
             jamPinjam: `${item.jamMulai} - ${item.jamSelesai}`,
+            buildingId: item.buildingId,
+            room: item.room,
           };
         });
 
         setPeminjaman(formattedData);
-
-        setStats({
-          peminjamanBaru: 0,
-          disetujui: formattedData.length,
-          ditolak: 0,
-          totalPeminjaman: formattedData.length,
-        });
       } catch (error) {
         console.error("Gagal mengambil data:", error);
       } finally {
@@ -118,6 +116,10 @@ export default function DashboardUser() {
     }
   };
 
+  const handleShowDetail = (booking: PeminjamanItem) => {
+    setSelectedBooking(booking);
+  };
+
   return (
     <div className="h-screen w-full flex lg:flex-row flex-col">
       <div className="lg:hidden md:hidden">
@@ -149,7 +151,7 @@ export default function DashboardUser() {
 
           <div
             className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-            onClick={() => navigate("/buildingRooms")}
+            onClick={() => navigate("/buildingRoomsUser")}
           >
             <span className="material-symbols-outlined">apartment</span>
             <a className="text-black">Daftar Gedung</a>
@@ -192,7 +194,7 @@ export default function DashboardUser() {
 
         <div
           className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-          onClick={() => navigate("/buildingRooms")}
+          onClick={() => navigate("/buildingRoomsUser")}
         >
           <span className="material-symbols-outlined">apartment</span>
           <a className="text-black">Daftar Gedung</a>
@@ -216,63 +218,12 @@ export default function DashboardUser() {
 
       <div className="flex-1 p-5 lg:p-8 lg:ml-[300px] overflow-y-auto h-screen">
         <div className="mb-8">
-          <h1 className="text-3xl font-medium">Dashboard</h1>
-          <a>Pantau dan kelola peminjaman ruangan kampus</a>
-        </div>
-
-        <div className="flex flex-row flex-wrap gap-4 justify-center">
-          <div className="flex justify-between p-6 rounded-lg w-80 bg-[#FFF6D8] border border-yellow-400">
-            <div className="flex flex-col gap-2">
-              <span className="material-symbols-outlined text-yellow-500">
-                clock_loader_40
-              </span>
-              <a className="font-semibold">Peminjaman Baru</a>
-              <p className="text-sm text-slate-600">Menunggu persetujuan</p>
-            </div>
-            <div className="text-[30px] font-semibold">
-              {stats.peminjamanBaru}
-            </div>
-          </div>
-          <div className="flex justify-between p-6 rounded-lg w-80 bg-[#DDEFE0] border border-green-400">
-            <div className="flex flex-col gap-2">
-              <span className="material-symbols-outlined text-green-500">
-                check_circle
-              </span>
-              <a className="font-semibold">Disetujui</a>
-              <p className="text-sm text-slate-600">Hari ini</p>
-            </div>
-            <div className="text-[30px] font-semibold">{stats.disetujui}</div>
-          </div>
-          <div className="flex justify-between p-6 rounded-lg w-80 bg-[#F8DDE0] border border-red-400">
-            <div className="flex flex-col gap-2">
-              <span className="material-symbols-outlined text-red-500">
-                error
-              </span>
-              <a className="font-semibold">Ditolak</a>
-              <p className="text-sm text-slate-600">Perlu ditangani</p>
-            </div>
-            <div className="text-[30px] font-semibold">{stats.ditolak}</div>
-          </div>
-          <div className="flex justify-between p-6 rounded-lg w-80 bg-[#D8E8F8] border border-blue-400">
-            <div className="flex flex-col gap-2">
-              <span className="material-symbols-outlined text-blue-500">
-                docs
-              </span>
-              <a className="font-semibold">Total Peminjaman</a>
-              <p className="text-sm text-slate-600">keseluruhan</p>
-            </div>
-            <div className="text-[30px] font-semibold">
-              {stats.totalPeminjaman}
-            </div>
-          </div>
+          <h1 className="text-3xl font-medium">Daftar Peminjaman Saya</h1>
+          <a>Pantau status peminjamanmu di sini</a>
         </div>
 
         <div className="mt-10">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h6 className="text-xl font-semibold text-gray-800">
-              Jadwal Peminjaman
-            </h6>
-
             <div className="flex items-center gap-2">
               <input
                 type="date"
@@ -432,6 +383,20 @@ export default function DashboardUser() {
                 <p className="text-gray-500">Jam</p>
                 <p>{selectedBooking.jamPinjam}</p>
               </div>
+
+              {selectedBooking.room && (
+                <div className="md:col-span-2 mt-4">
+                  <p className="text-gray-500 mb-1 font-medium">
+                    Detail Ruangan
+                  </p>
+                  <p className="flex gap-4 font-medium text-gray-700">
+                    <span>{selectedBooking.room.nama}</span>
+                    <span>Status: {selectedBooking.room.status}</span>
+                    <span>Tipe: {selectedBooking.room.tipe}</span>
+                    <span>Kapasitas: {selectedBooking.room.kapasitas}</span>
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">

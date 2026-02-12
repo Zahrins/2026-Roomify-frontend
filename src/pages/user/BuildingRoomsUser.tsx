@@ -13,12 +13,12 @@ interface Building {
   rooms: Room[];
 }
 
-export default function BuildingRooms() {
+export default function BuildingRoomsUser() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
-    tanggal: new Date().toISOString().split("T")[0], 
+    tanggal: new Date().toISOString().split("T")[0],
     tipe: "All",
   });
 
@@ -94,7 +94,7 @@ export default function BuildingRooms() {
 
           <div
             className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-            onClick={() => navigate("/dashboardAdmin")}
+            onClick={() => navigate("/dashboardUser")}
           >
             <span className="material-symbols-outlined">space_dashboard</span>
             <a className="text-black">Dashboard</a>
@@ -105,7 +105,10 @@ export default function BuildingRooms() {
             <a className="text-white">Daftar Gedung</a>
           </div>
 
-          <div className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+          <div
+            className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+            onClick={() => navigate("/historyPage")}
+          >
             <span className="material-symbols-outlined">history</span>
             <a className="text-black">Riwayat</a>
           </div>
@@ -134,7 +137,7 @@ export default function BuildingRooms() {
 
         <div
           className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-          onClick={() => navigate("/dashboardAdmin")}
+          onClick={() => navigate("/dashboardUser")}
         >
           <span className="material-symbols-outlined">space_dashboard</span>
           <a className="text-black">Dashboard</a>
@@ -145,7 +148,10 @@ export default function BuildingRooms() {
           <a className="text-white">Daftar Gedung</a>
         </div>
 
-        <div className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+        <div
+          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          onClick={() => navigate("/historyPage")}
+        >
           <span className="material-symbols-outlined">history</span>
           <a className="text-black">Riwayat</a>
         </div>
@@ -178,26 +184,28 @@ export default function BuildingRooms() {
           />
           <div className="flex flex-wrap items-center gap-2">
             <span className="material-symbols-outlined">filter_alt</span>
-            {["All", "Kelas", "Laboratorium", "Theater", "Auditorium"].map((item) => (
-              <button
-                key={item}
-                onClick={() =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    tipe: item,
-                  }))
-                }
-                className={`px-4 py-2 rounded-xl border text-sm
+            {["All", "Kelas", "Laboratorium", "Theater", "Auditorium"].map(
+              (item) => (
+                <button
+                  key={item}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      tipe: item,
+                    }))
+                  }
+                  className={`px-4 py-2 rounded-xl border text-sm
                   ${
                     filters.tipe === item
                       ? "bg-[#547792] text-white hover:bg-[#435d70]"
                       : "bg-white text-gray-700 hover:bg-slate-300"
                   }
                 `}
-              >
-                {item}
-              </button>
-            ))}
+                >
+                  {item}
+                </button>
+              ),
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">

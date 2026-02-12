@@ -20,6 +20,14 @@ export default function Dashboard() {
     lokasiPinjam: string;
     tglPinjam: string;
     jamPinjam: string;
+    buildingId: number;
+    room?: {
+      id: number;
+      nama: string;
+      status: string;
+      tipe: string;
+      kapasitas: number;
+    };
   };
 
   const [peminjaman, setPeminjaman] = useState<PeminjamanItem[]>([]);
@@ -30,9 +38,11 @@ export default function Dashboard() {
     totalPeminjaman: 0,
   });
   const [filterDate, setFilterDate] = useState("");
+
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterDate(e.target.value);
   };
+
   const filteredItems = peminjaman.filter((item) => {
     if (!filterDate) return true;
 
@@ -49,8 +59,8 @@ export default function Dashboard() {
         const buildingNames: { [key: number]: string } = {
           1: "Gedung D3",
           2: "Gedung D4",
-          3: "Gedung Pascasarjana",
-          4: "Gedung Theater",
+          3: "Gedung SAW",
+          4: "Gedung Pascasarjana",
         };
 
         const formattedData = data.map((item: any) => {
@@ -67,9 +77,12 @@ export default function Dashboard() {
             namaPeminjam: item.namaPeminjam,
             status: "pending",
             keperluan: item.keperluan,
-            lokasiPinjam: buildingNames [item.buildingId] || `Gedung ${item.buildingId}`,
+            lokasiPinjam:
+              buildingNames[item.buildingId] || `Gedung ${item.buildingId}`,
             tglPinjam: formattedDate,
             jamPinjam: `${item.jamMulai} - ${item.jamSelesai}`,
+            buildingId: item.buildingId,
+            room: item.room,
           };
         });
 
@@ -116,6 +129,11 @@ export default function Dashboard() {
       }
     }
   };
+
+  const handleShowDetail = (booking: PeminjamanItem) => {
+    setSelectedBooking(booking); 
+  };
+
 
   return (
     <div className="h-screen w-full flex lg:flex-row flex-col">
@@ -340,13 +358,13 @@ export default function Dashboard() {
                   <div className="flex gap-5 mt-3">
                     <span
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => setSelectedBooking(item)}
+                      onClick={() => handleShowDetail(item)}
                     >
                       info
                     </span>
                     <Link
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      to={`/editBooking/${item.id}`}
+                      to={`/editStatus/${item.id}`}
                     >
                       edit
                     </Link>
@@ -396,7 +414,7 @@ export default function Dashboard() {
 
             <h2 className="text-2xl font-semibold mb-4">Detail Peminjaman</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-gray-500">Nama Peminjam</p>
                 <p className="font-medium">{selectedBooking.namaPeminjam}</p>
@@ -406,7 +424,7 @@ export default function Dashboard() {
                 <p className="text-gray-500">Status</p>
                 <span
                   className={`inline-block mt-1 px-3 py-1 rounded-full text-xs
-            ${statusStyles[selectedBooking.status]}`}
+                ${statusStyles[selectedBooking.status]}`}
                 >
                   {selectedBooking.status}
                 </span>
@@ -431,6 +449,20 @@ export default function Dashboard() {
                 <p className="text-gray-500">Jam</p>
                 <p>{selectedBooking.jamPinjam}</p>
               </div>
+
+              {selectedBooking.room && (
+                <div className="md:col-span-2 mt-4">
+                  <p className="text-gray-500 mb-1 font-medium">
+                    Detail Ruangan
+                  </p>
+                  <p className="flex gap-4 font-medium text-gray-700">
+                    <span>{selectedBooking.room.nama}</span>
+                    <span>Status: {selectedBooking.room.status}</span>
+                    <span>Tipe: {selectedBooking.room.tipe}</span>
+                    <span>Kapasitas: {selectedBooking.room.kapasitas}</span>
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">

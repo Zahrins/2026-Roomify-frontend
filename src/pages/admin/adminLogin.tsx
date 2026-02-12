@@ -30,7 +30,7 @@ export default function AdminLogin({ setUser }: any) {
       setUser && setUser(data);
 
       if (data.role === "Admin") navigate("/dashboardAdmin");
-      else navigate("/dashboard");
+      else navigate("/dashboardAdmin");
     } catch (err) {
       console.error(err);
       setError("Tidak dapat terhubung ke server.");

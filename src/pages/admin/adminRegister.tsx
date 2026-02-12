@@ -28,7 +28,7 @@ export default function AdminRegister() {
       }
 
       alert("Registration successful! Please login.");
-      navigate("/admin-login");
+      navigate("/adminLogin");
     } catch (err) {
       console.error(err);
       setError("Tidak dapat terhubung ke server.");

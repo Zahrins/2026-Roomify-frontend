@@ -17,7 +17,7 @@ export default function AdminRegister() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, role: "Admin" }),
+          body: JSON.stringify({ username, password, role: "admin" }),
         },
       );
 

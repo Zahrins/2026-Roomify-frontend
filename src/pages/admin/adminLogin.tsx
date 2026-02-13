@@ -29,8 +29,8 @@ export default function AdminLogin({ setUser }: any) {
       localStorage.setItem("userData", JSON.stringify(data));
       setUser && setUser(data);
 
-      if (data.role === "Admin") navigate("/dashboardAdmin");
-      else navigate("/dashboardAdmin");
+      if (data.role === "admin") navigate("/dashboardAdmin");
+      else navigate("/dashboard");
     } catch (err) {
       console.error(err);
       setError("Tidak dapat terhubung ke server.");

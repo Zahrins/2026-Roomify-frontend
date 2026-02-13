@@ -45,8 +45,20 @@ export default function DashboardUser() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("userToken");
         setLoading(true);
-        const response = await fetch("https://localhost:7252/api/Bookings");
+        const response = await fetch("https://localhost:7252/api/Bookings", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (response.status === 401) {
+          alert("Sesi telah habis, silakan login kembali.");
+          navigate("/login");
+          return;
+        }
         const data = await response.json();
 
         const buildingNames: { [key: number]: string } = {
@@ -114,10 +126,6 @@ export default function DashboardUser() {
         console.error("Error saat menghapus:", error);
       }
     }
-  };
-
-  const handleShowDetail = (booking: PeminjamanItem) => {
-    setSelectedBooking(booking);
   };
 
   return (

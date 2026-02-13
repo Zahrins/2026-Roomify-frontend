@@ -33,8 +33,8 @@ export default function UserLogin({ setUser }: UserLoginProps) {
       localStorage.setItem("userData", JSON.stringify(data));
       setUser && setUser(data);
 
-      if (data.role === "User") navigate("/dashboardUser");
-      else navigate("/dashboardUser");
+      if (data.role === "user") navigate("/dashboardUser");
+      else navigate("/dashboard");
     } catch (err) {
       console.error(err);
       setError("Tidak dapat terhubung ke server.");

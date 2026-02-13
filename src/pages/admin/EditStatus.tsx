@@ -3,13 +3,25 @@ import { useNavigate, useParams } from "react-router-dom";
 
 interface Building {
   id: number;
-  name: string;
+  nama: string;
 }
 
 interface Room {
   id: number;
-  name: string;
-  buildingId: number;
+  nama: string;
+  status: string;
+  tipe: string;
+  kapasitas: number;
+  buildingId?: number;
+  building?: Building;
+}
+
+interface StatusHistory {
+  id: number;
+  bookingId: number;
+  status: string;
+  changedAt: string;
+  changedByUserId?: number;
 }
 
 interface Booking {
@@ -22,286 +34,310 @@ interface Booking {
   keperluan: string;
   status: string;
   buildingId: number;
-  roomId: number;
+  roomId?: number;
+  userId?: number;
+  room?: Room;
+  building?: Building;
+  statusHistory?: StatusHistory[];
+}
+
+const buildingNames: { [key: number]: string } = {
+  1: "Gedung D3",
+  2: "Gedung D4",
+  3: "Gedung SAW",
+  4: "Gedung Pascasarjana",
+};
+
+interface StatusHistoryDisplayProps {
+  bookingId: number;
+}
+
+function StatusHistoryDisplay({ bookingId }: StatusHistoryDisplayProps) {
+  const [history, setHistory] = useState<StatusHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        const res = await fetch(
+          `https://localhost:7252/api/Bookings/${bookingId}/history`,
+        );
+        if (!res.ok) throw new Error("Gagal load riwayat");
+        const data: StatusHistory[] = await res.json();
+        setHistory(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchHistory();
+  }, [bookingId]);
+
+  if (loading)
+    return <p className="text-sm text-gray-500">Memuat riwayat...</p>;
+  if (history.length === 0)
+    return <p className="text-sm text-gray-500">Belum ada riwayat</p>;
+
+  return (
+    <div className="space-y-2">
+      {history.map((item) => (
+        <div key={item.id} className="flex items-center gap-2 text-sm">
+          <span
+            className={`px-2 py-1 rounded text-xs font-medium ${
+              item.status === "Pending"
+                ? "bg-yellow-100 text-yellow-800"
+                : item.status === "Disetujui"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+            }`}
+          >
+            {item.status}
+          </span>
+          <span className="text-gray-600">
+            {new Date(item.changedAt).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "numeric",
+              year: "numeric",
+            })}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function EditStatus() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [namaPeminjam, setNamaPeminjam] = useState("");
-  const [noKontak, setNoKontak] = useState("");
-  const [tanggal, setTanggal] = useState("");
-  const [jamMulai, setJamMulai] = useState("");
-  const [jamSelesai, setJamSelesai] = useState("");
-  const [keperluan, setKeperluan] = useState("");
+  const [booking, setBooking] = useState<Booking | null>(null);
   const [status, setStatus] = useState("");
-
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [selectedBuilding, setSelectedBuilding] = useState("");
-  const [selectedRoom, setSelectedRoom] = useState("");
-
   const [loading, setLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  // ===============================
-  // LOAD BUILDINGS (sekali saja)
-  // ===============================
-  useEffect(() => {
-    async function loadBuildings() {
-      try {
-        const res = await fetch(`https://localhost:7252/api/buildings`);
-        if (!res.ok) throw new Error("Gagal ambil buildings");
-
-        const data: Building[] = await res.json();
-        setBuildings(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    loadBuildings();
-  }, []);
-
-  // ===============================
-  // LOAD BOOKING DETAIL
-  // ===============================
   useEffect(() => {
     if (!id) return;
 
-    async function loadBooking() {
+    async function fetchBooking() {
       try {
-        const res = await fetch(`https://localhost:7252/api/Bookings/${id}`);
+        const token = localStorage.getItem("userToken");
+        const res = await fetch(`https://localhost:7252/api/Bookings/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!res.ok) throw new Error("Gagal mengambil data booking");
-
         const data: Booking = await res.json();
-
-        setNamaPeminjam(data.namaPeminjam);
-        setNoKontak(data.noKontak);
-        setTanggal(data.tanggal.split("T")[0]);
-        setJamMulai(data.jamMulai);
-        setJamSelesai(data.jamSelesai);
-        setKeperluan(data.keperluan);
+        setBooking(data);
         setStatus(data.status);
-        setSelectedBuilding(String(data.buildingId));
-        setSelectedRoom(String(data.roomId));
       } catch (err) {
         console.error(err);
+        setError("Data tidak ditemukan");
       }
     }
 
-    loadBooking();
+    fetchBooking();
   }, [id]);
 
-  // ===============================
-  // LOAD ROOMS saat building sudah ada
-  // ===============================
-  useEffect(() => {
-    if (!selectedBuilding) return;
+  const formatTanggal = (tanggal: string) => {
+    if (!tanggal) return "";
+    return new Date(tanggal).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
-    async function loadRooms() {
-      try {
-        const res = await fetch(
-          `https://localhost:7252/api/rooms/byBuilding/${selectedBuilding}`,
-        );
+  const getBuildingName = () => {
+    if (booking?.building?.nama) return booking.building.nama;
+    if (booking?.room?.building?.nama) return booking.room.building.nama;
+    if (booking?.buildingId && buildingNames[booking.buildingId])
+      return buildingNames[booking.buildingId];
+    return `Building ID: ${booking?.buildingId || "-"}`;
+  };
 
-        if (!res.ok) throw new Error("Gagal ambil rooms");
-
-        const data: Room[] = await res.json();
-        setRooms(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    loadRooms();
-  }, [selectedBuilding]);
-
-  // ===============================
-  // HANDLE SUBMIT
-  // ===============================
-  const handleConnect = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id) return;
+    if (!booking || !id) return;
 
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch(
-        `https://localhost:7252/api/Bookings/${id}`,
+      const token = localStorage.getItem("userToken");
+      const res = await fetch(
+        `https://localhost:7252/api/Bookings/admin/${id}/status`, 
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            namaPeminjam,
-            noKontak,
-            tanggal,
-            jamMulai,
-            jamSelesai,
-            keperluan,
-            buildingId: parseInt(selectedBuilding),
-            roomId: parseInt(selectedRoom),
-            status,
-          }),
+          body: JSON.stringify({ status: status }), 
         },
       );
 
-      const responseData = await response.json();
+      if (!res.ok) {
+        if (res.status === 403)
+          throw new Error("Akses Ditolak: Anda bukan Admin.");
+        if (res.status === 401)
+          throw new Error("Sesi berakhir, silakan login ulang.");
 
-      if (response.ok) {
-        setIsSuccess(true);
-        setTimeout(() => {
-          setIsSuccess(false);
-          navigate("/dashboardUser");
-        }, 3000);
-      } else {
-        setError(responseData.message || "Update gagal.");
+        const errorText = await res.text();
+        const errorData = errorText ? JSON.parse(errorText) : {};
+        throw new Error(errorData.message || "Gagal update status");
       }
-    } catch (err) {
-      setError("Terjadi kesalahan.");
+
+      setSuccess(true);
+      setTimeout(() => navigate("/dashboardAdmin"), 2000);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  if (!booking && !error)
+    return <p className="text-center mt-10">Loading data...</p>;
+
   return (
-    <div className="">
-      <div className="max-w-4xl mx-auto p-6">
-        {isSuccess && (
-          <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-auto">
-            <div className="flex justify-center items-center bg-white rounded-3xl border border-black text-black px-4 py-2">
-              <span className="material-symbols-outlined text-green-600">
-                check_circle
-              </span>
-              <a>Sign up successful!</a>
-            </div>
+    <div className="max-w-4xl mx-auto p-6">
+      {success && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-2 bg-white border border-black rounded-3xl px-4 py-2 text-black">
+            <span className="material-symbols-outlined text-green-600">
+              check_circle
+            </span>
+            <span>Status berhasil diupdate!</span>
           </div>
-        )}
-
-        {loading && (
-          <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-auto">
-            <div className="flex justify-center items-center bg-white rounded-3xl border border-black text-black px-4 py-2">
-              <span className="material-symbols-outlined text-yellow-600">
-                hourglass_bottom
-              </span>
-              <a>Signing in...</a>
-            </div>
+        </div>
+      )}
+      {loading && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-2 bg-white border border-black rounded-3xl px-4 py-2 text-black">
+            <span className="material-symbols-outlined text-yellow-600">
+              hourglass_bottom
+            </span>
+            <span>Memproses...</span>
           </div>
-        )}
-
-        {error && (
-          <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-auto">
-            <div className="flex justify-center items-center bg-white rounded-3xl border border-black text-black px-4 py-2">
-              <span className="material-symbols-outlined text-red-600">
-                error
-              </span>
-              <a>{error}</a>
-            </div>
+        </div>
+      )}
+      {error && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50">
+          <div className="flex items-center gap-2 bg-white border border-black rounded-3xl px-4 py-2 text-black">
+            <span className="material-symbols-outlined text-red-600">
+              error
+            </span>
+            <span>{error}</span>
           </div>
-        )}
+        </div>
+      )}
 
-        <div className="mb-10">
-          <h3 className="font-semibold text-[25px]">Edit Status Peminjaman</h3>
-          <a className="mt-2 text-slate-600">
-            Isi formulir di bawah untuk mengajukan peminjaman ruangan
-          </a>
+      <div className="mb-10">
+        <h3 className="font-semibold text-[25px]">Edit Status Peminjaman</h3>
+        <p className="mt-2 text-slate-600">Ubah status peminjaman ruangan</p>
+      </div>
+
+      <form className="space-y-6" onSubmit={handleUpdate}>
+      
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nama Peminjam
+            </label>
+            <p className="text-lg">{booking?.namaPeminjam}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nomor Kontak
+            </label>
+            <p className="text-lg">{booking?.noKontak}</p>
+          </div>
         </div>
 
-        <form className="space-y-6" onSubmit={handleConnect}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nama Peminjam
-              </label>
-              <a>{namaPeminjam}</a>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nomor Kontak
-              </label>
-              <a>{noKontak}</a>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gedung
-              </label>
-              <a>
-                {buildings.find((b) => String(b.id) === selectedBuilding)?.name}
-              </a>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ruangan
-              </label>
-              <a>{rooms.find((r) => String(r.id) === selectedRoom)?.name}</a>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal
-              </label>
-              <a>{tanggal}</a>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jam Mulai
-              </label>
-              <a>{jamMulai}</a>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Jam Selesai
-              </label>
-              <a>{jamSelesai}</a>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Keperluan
+              Gedung
             </label>
-            <a>{keperluan}</a>
+            <p className="text-lg">{getBuildingName()}</p>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
+              Ruangan
             </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-            >
-              <option value="Pending">Pending</option>
-              <option value="Disetujui">Disetujui</option>
-              <option value="Ditolak">Ditolak</option>
-            </select>
+            <p className="text-lg">{booking?.room?.nama || "N/A"}</p>
           </div>
+        </div>
 
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-[#547792] text-white px-6 py-2 rounded-lg hover:bg-[#435d70] transition"
-            >
-              Simpan
-            </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tanggal
+            </label>
+            <p className="text-lg">{formatTanggal(booking?.tanggal || "")}</p>
           </div>
-        </form>
-      </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Jam Mulai
+            </label>
+            <p className="text-lg">{booking?.jamMulai}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Jam Selesai
+            </label>
+            <p className="text-lg">{booking?.jamSelesai}</p>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Keperluan
+          </label>
+          <p className="text-lg">{booking?.keperluan}</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Status
+          </label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+          >
+            <option value="Pending">Pending</option>
+            <option value="Disetujui">Disetujui</option>
+            <option value="Ditolak">Ditolak</option>
+          </select>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-gray-700 mb-2">Riwayat Status</h4>
+          {booking?.id && <StatusHistoryDisplay bookingId={booking.id} />}
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => navigate("/dashboardUser")}
+            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-[#547792] text-white px-6 py-2 rounded-lg hover:bg-[#435d70] transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Simpan
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

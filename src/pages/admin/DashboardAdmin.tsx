@@ -52,9 +52,29 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("userToken");
         setLoading(true);
-        const response = await fetch("https://localhost:7252/api/Bookings");
+        const response = await fetch("https://localhost:7252/api/Bookings", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
         const data = await response.json();
+        console.log("Data dari API:", data); 
+
+        if (data.length === 0) {
+          console.warn(
+            "API mengembalikan array kosong. Cek filter UserId di backend.",
+          );
+        }
+        
+        if (response.status === 401) {
+          alert("Sesi telah habis, silakan login kembali.");
+          navigate("/Adminlogin");
+          return;
+        }
 
         const buildingNames: { [key: number]: string } = {
           1: "Gedung D3",
@@ -129,11 +149,6 @@ export default function Dashboard() {
       }
     }
   };
-
-  const handleShowDetail = (booking: PeminjamanItem) => {
-    setSelectedBooking(booking); 
-  };
-
 
   return (
     <div className="h-screen w-full flex lg:flex-row flex-col">
@@ -358,7 +373,7 @@ export default function Dashboard() {
                   <div className="flex gap-5 mt-3">
                     <span
                       className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => handleShowDetail(item)}
+                      onClick={() => setSelectedBooking(item)}
                     >
                       info
                     </span>

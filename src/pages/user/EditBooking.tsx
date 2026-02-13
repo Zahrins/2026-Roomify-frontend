@@ -23,7 +23,12 @@ export default function EditBooking() {
 
     async function loadBooking() {
       try {
-        const res = await fetch(`https://localhost:7252/api/Bookings/${id}`);
+        const token = localStorage.getItem("userToken");
+        const res = await fetch(`https://localhost:7252/api/Bookings/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        });
         if (!res.ok) throw new Error("Gagal mengambil data booking");
 
         const data = await res.json();
@@ -98,12 +103,14 @@ export default function EditBooking() {
 
     setLoading(true);
     try {
+      const token = localStorage.getItem("userToken");
       const response = await fetch(
-        `https://localhost:7252/api/Bookings/${id}`,
+        `https://localhost:7252/api/Bookings/user/${id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             namaPeminjam,

@@ -42,8 +42,8 @@ interface Booking {
 }
 
 const buildingNames: { [key: number]: string } = {
-  1: "Gedung D3",
-  2: "Gedung D4",
+  1: "Gedung D4",
+  2: "Gedung D3",
   3: "Gedung SAW",
   4: "Gedung Pascasarjana",
 };

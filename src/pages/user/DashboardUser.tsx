@@ -47,23 +47,26 @@ export default function DashboardUser() {
       try {
         const token = localStorage.getItem("userToken");
         setLoading(true);
-        const response = await fetch("https://localhost:7252/api/Bookings", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const response = await fetch(
+          "https://localhost:7252/api/Bookings?tanggal=${filterDate}",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
         if (response.status === 401) {
           alert("Sesi telah habis, silakan login kembali.");
-          navigate("/login");
+          navigate("/userLogin");
           return;
         }
         const data = await response.json();
 
         const buildingNames: { [key: number]: string } = {
-          1: "Gedung D3",
-          2: "Gedung D4",
+          1: "Gedung D4",
+          2: "Gedung D3",
           3: "Gedung SAW",
           4: "Gedung Pascasarjana",
         };
@@ -80,7 +83,7 @@ export default function DashboardUser() {
           return {
             id: item.id,
             namaPeminjam: item.namaPeminjam,
-            status: "pending",
+            status: item.status,
             keperluan: item.keperluan,
             lokasiPinjam:
               buildingNames[item.buildingId] || `Gedung ${item.buildingId}`,

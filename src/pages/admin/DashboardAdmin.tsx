@@ -2,6 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+interface StatusHistory {
+  id: number;
+  bookingId: number;
+  status: string;
+  changedAt: string;
+  changedByUserId?: number;
+}
+
 export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -24,7 +32,7 @@ export default function Dashboard() {
     room?: {
       id: number;
       nama: string;
-      status: string;
+      status: "kosong" | "terpakai";
       tipe: string;
       kapasitas: number;
     };
@@ -54,13 +62,16 @@ export default function Dashboard() {
       try {
         const token = localStorage.getItem("userToken");
         setLoading(true);
-        const response = await fetch("https://localhost:7252/api/Bookings", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const response = await fetch(
+          "https://localhost:7252/api/Bookings?tanggal=${filterDate}",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
         const data = await response.json();
         console.log("Data dari API:", data); 
 
@@ -77,8 +88,8 @@ export default function Dashboard() {
         }
 
         const buildingNames: { [key: number]: string } = {
-          1: "Gedung D3",
-          2: "Gedung D4",
+          1: "Gedung D4",
+          2: "Gedung D3",
           3: "Gedung SAW",
           4: "Gedung Pascasarjana",
         };
@@ -95,7 +106,7 @@ export default function Dashboard() {
           return {
             id: item.id,
             namaPeminjam: item.namaPeminjam,
-            status: "pending",
+            status: item.status,
             keperluan: item.keperluan,
             lokasiPinjam:
               buildingNames[item.buildingId] || `Gedung ${item.buildingId}`,
@@ -127,6 +138,39 @@ export default function Dashboard() {
   const [selectedBooking, setSelectedBooking] = useState<PeminjamanItem | null>(
     null,
   );
+
+  const [history, setHistory] = useState<StatusHistory[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedBooking) return;
+
+    const fetchHistory = async () => {
+      try {
+        setHistoryLoading(true);
+        const token = localStorage.getItem("userToken");
+        const res = await fetch(
+          `https://localhost:7252/api/Bookings/${selectedBooking.id}/history`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        if (!res.ok) throw new Error("Gagal load riwayat");
+        const data: StatusHistory[] = await res.json();
+        setHistory(data);
+      } catch (err) {
+        console.error(err);
+        setHistory([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, [selectedBooking]);
 
   const handleDelete = async (id: number) => {
     if (window.confirm("Apakah Anda yakin ingin menghapus data ini?")) {
@@ -194,13 +238,6 @@ export default function Dashboard() {
             <span className="material-symbols-outlined">history</span>
             <a className="text-black">Riwayat</a>
           </div>
-          <button
-            onClick={() => navigate("/bookingForm")}
-            className="mt-auto mb-5 flex justify-center items-center bg-[#547792] p-2 gap-2 rounded-lg cursor-pointer text-white hover:opacity-90 transition"
-          >
-            <span className="material-symbols-outlined">add_circle</span>
-            <span className="text-[15px]">Tambah peminjaman</span>
-          </button>
 
           <button
             className="absolute top-4 right-4 text-xl"
@@ -237,13 +274,6 @@ export default function Dashboard() {
           <span className="material-symbols-outlined">history</span>
           <a className="text-black">Riwayat</a>
         </div>
-        <button
-          onClick={() => navigate("/BookingForm")}
-          className="mt-auto flex justify-center items-center gap-2 bg-[#547792] p-4 rounded-lg cursor-pointer text-white hover:opacity-90 transition"
-        >
-          <span className="material-symbols-outlined">add_circle</span>
-          <span>Tambah peminjaman</span>
-        </button>
       </div>
 
       <div className="flex-1 p-5 lg:p-8 lg:ml-[300px] overflow-y-auto h-screen">
@@ -477,6 +507,27 @@ export default function Dashboard() {
                     <span>Kapasitas: {selectedBooking.room.kapasitas}</span>
                   </p>
                 </div>
+              )}
+              {historyLoading ? (
+                <p>Memuat riwayat...</p>
+              ) : history.length === 0 ? (
+                <p className="text-gray-500 text-sm">
+                  Belum ada perubahan status
+                </p>
+              ) : (
+                <ul className="text-sm border border-gray-200 rounded-lg p-2 max-h-40 overflow-y-auto">
+                  {history.map((h) => (
+                    <li
+                      key={h.id}
+                      className="flex justify-between py-1 border-b last:border-b-0"
+                    >
+                      <span>{h.status}</span>
+                      <span className="text-gray-400">
+                        {new Date(h.changedAt).toLocaleString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
 

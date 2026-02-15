@@ -104,7 +104,10 @@ export default function BuildingRooms() {
             <a className="text-white">Daftar Gedung</a>
           </div>
 
-          <div className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+          <div
+            className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+            onClick={() => navigate("/historyPage")}
+          >
             <span className="material-symbols-outlined">history</span>
             <a className="text-black">Riwayat</a>
           </div>
@@ -137,7 +140,10 @@ export default function BuildingRooms() {
           <a className="text-white">Daftar Gedung</a>
         </div>
 
-        <div className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black">
+        <div
+          className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          onClick={() => navigate("/historyPage")}
+        >
           <span className="material-symbols-outlined">history</span>
           <a className="text-black">Riwayat</a>
         </div>
@@ -192,9 +198,7 @@ export default function BuildingRooms() {
               const { ruangKosong, ruangTerpakai } = getStats(gedung.rooms);
 
               return (
-                <div
-                  className="bg-white border border-slate-200 transition-all duration-300 ease-out hover:shadow-md hover:-translate-y-1 rounded-2xl p-6 shadow-sm"
-                >
+                <div className="bg-white border border-slate-200 transition-all duration-300 ease-out hover:shadow-md hover:-translate-y-1 rounded-2xl p-6 shadow-sm">
                   <div className="flex items-start gap-3">
                     <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
                       <span className="material-symbols-outlined">domain</span>

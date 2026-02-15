@@ -315,7 +315,7 @@ export default function EditStatus() {
         <div className="flex justify-end gap-3">
           <button
             type="button"
-            onClick={() => navigate("/dashboardUser")}
+            onClick={() => navigate("/dashboardAdmin")}
             className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition"
           >
             Batal

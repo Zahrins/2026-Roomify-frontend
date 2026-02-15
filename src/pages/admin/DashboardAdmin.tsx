@@ -15,15 +15,15 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const statusStyles = {
-    pending: "bg-yellow-100 text-yellow-600 border border-yellow-200",
-    approved: "bg-blue-100 text-blue-600 border border-blue-200",
-    rejected: "bg-red-100 text-red-600 border border-red-200",
+    Pending: "bg-yellow-100 text-yellow-600 border border-yellow-200",
+    Disetujui: "bg-green-100 text-green-600 border border-green-200",
+    Ditolak: "bg-red-100 text-red-600 border border-red-200",
   };
 
   type PeminjamanItem = {
     id: number;
     namaPeminjam: string;
-    status: "pending" | "approved" | "rejected";
+    status: "Pending" | "Disetujui" | "Ditolak";
     keperluan: string;
     lokasiPinjam: string;
     tglPinjam: string;
@@ -40,10 +40,10 @@ export default function Dashboard() {
 
   const [peminjaman, setPeminjaman] = useState<PeminjamanItem[]>([]);
   const [stats, setStats] = useState({
-    peminjamanBaru: 0,
-    disetujui: 0,
-    ditolak: 0,
-    totalPeminjaman: 0,
+    Pending: 0,
+    Disetujui: 0,
+    Ditolak: 0,
+    TotalPeminjaman: 0,
   });
   const [filterDate, setFilterDate] = useState("");
 
@@ -73,19 +73,6 @@ export default function Dashboard() {
           },
         );
         const data = await response.json();
-        console.log("Data dari API:", data); 
-
-        if (data.length === 0) {
-          console.warn(
-            "API mengembalikan array kosong. Cek filter UserId di backend.",
-          );
-        }
-        
-        if (response.status === 401) {
-          alert("Sesi telah habis, silakan login kembali.");
-          navigate("/Adminlogin");
-          return;
-        }
 
         const buildingNames: { [key: number]: string } = {
           1: "Gedung D4",
@@ -116,15 +103,8 @@ export default function Dashboard() {
             room: item.room,
           };
         });
-
         setPeminjaman(formattedData);
-
-        setStats({
-          peminjamanBaru: 0,
-          disetujui: formattedData.length,
-          ditolak: 0,
-          totalPeminjaman: formattedData.length,
-        });
+        
       } catch (error) {
         console.error("Gagal mengambil data:", error);
       } finally {
@@ -134,6 +114,25 @@ export default function Dashboard() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const Pending = filteredItems.filter(
+      (item) => item.status === "Pending",
+    ).length;
+    const Disetujui = filteredItems.filter(
+      (item) => item.status === "Disetujui",
+    ).length;
+    const Ditolak = filteredItems.filter(
+      (item) => item.status === "Ditolak",
+    ).length;
+
+    setStats({
+      Pending,
+      Disetujui,
+      Ditolak,
+      TotalPeminjaman: filteredItems.length,
+    });
+  }, [filteredItems]);
 
   const [selectedBooking, setSelectedBooking] = useState<PeminjamanItem | null>(
     null,
@@ -210,7 +209,7 @@ export default function Dashboard() {
         )}
 
         <div
-          className={`flex flex-col fixed top-0 left-0 h-full w-64 bg-slate-100 p-4 z-50 transform transition-transform duration-300 md:hidden
+          className={`flex flex-col fixed top-0 left-0 h-full w-64 bg-white p-4 z-50 transform transition-transform duration-300 md:hidden
           ${open ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="mb-8">
@@ -248,9 +247,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-col fixed top-0 left-0 w-[300px] bg-slate-100 p-4 h-screen">
+      <div className="hidden lg:flex flex-col fixed top-0 left-0 w-[300px] bg-white border-r border-r-slate-200 p-4 h-screen">
         <div className="mb-8">
-          <h3 className="font-bold text-[30px] mb-3">Roomify</h3>
+          <h3 className="font-bold text-[25px] mb-3">Roomify</h3>
           <a>Campus Room Reservation System</a>
         </div>
 
@@ -260,7 +259,7 @@ export default function Dashboard() {
         </div>
 
         <div
-          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
           onClick={() => navigate("/buildingRooms")}
         >
           <span className="material-symbols-outlined">apartment</span>
@@ -268,7 +267,7 @@ export default function Dashboard() {
         </div>
 
         <div
-          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
           onClick={() => navigate("/historyPage")}
         >
           <span className="material-symbols-outlined">history</span>
@@ -276,7 +275,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="flex-1 p-5 lg:p-8 lg:ml-[300px] overflow-y-auto h-screen">
+      <div className="flex-1 p-5 lg:p-8 lg:ml-[300px] overflow-y-auto h-screen bg-white">
         <div className="mb-8">
           <h1 className="text-3xl font-medium">Dashboard</h1>
           <a>Pantau dan kelola peminjaman ruangan kampus</a>
@@ -288,12 +287,10 @@ export default function Dashboard() {
               <span className="material-symbols-outlined text-yellow-500">
                 clock_loader_40
               </span>
-              <a className="font-semibold">Peminjaman Baru</a>
-              <p className="text-sm text-slate-600">Menunggu persetujuan</p>
+              <a className="font-semibold">Menunggu Persetujuan</a>
+              <p className="text-sm text-slate-600">Dalam antrean verifikasi</p>
             </div>
-            <div className="text-[30px] font-semibold">
-              {stats.peminjamanBaru}
-            </div>
+            <div className="text-[30px] font-semibold">{stats.Pending}</div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#DDEFE0] border border-green-400">
             <div className="flex flex-col gap-2">
@@ -301,9 +298,9 @@ export default function Dashboard() {
                 check_circle
               </span>
               <a className="font-semibold">Disetujui</a>
-              <p className="text-sm text-slate-600">Hari ini</p>
+              <p className="text-sm text-slate-600">Siap digunakan hari ini</p>
             </div>
-            <div className="text-[30px] font-semibold">{stats.disetujui}</div>
+            <div className="text-[30px] font-semibold">{stats.Disetujui}</div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#F8DDE0] border border-red-400">
             <div className="flex flex-col gap-2">
@@ -311,9 +308,9 @@ export default function Dashboard() {
                 error
               </span>
               <a className="font-semibold">Ditolak</a>
-              <p className="text-sm text-slate-600">Perlu ditangani</p>
+              <p className="text-sm text-slate-600">Perlu peninjauan ulang</p>
             </div>
-            <div className="text-[30px] font-semibold">{stats.ditolak}</div>
+            <div className="text-[30px] font-semibold">{stats.Ditolak}</div>
           </div>
           <div className="flex justify-between p-6 rounded-lg w-80 bg-[#D8E8F8] border border-blue-400">
             <div className="flex flex-col gap-2">
@@ -321,10 +318,12 @@ export default function Dashboard() {
                 docs
               </span>
               <a className="font-semibold">Total Peminjaman</a>
-              <p className="text-sm text-slate-600">keseluruhan</p>
+              <p className="text-sm text-slate-600">
+                Seluruh pengajuan tercatat
+              </p>
             </div>
             <div className="text-[30px] font-semibold">
-              {stats.totalPeminjaman}
+              {stats.TotalPeminjaman}
             </div>
           </div>
         </div>
@@ -364,21 +363,47 @@ export default function Dashboard() {
               filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="mb-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-5 flex flex-row justify-between"
+                  className="mb-4 bg-slate-50 hover:bg-slate-100 transition-colors duration-300 border border-slate-200 rounded-lg p-5 flex flex-row justify-between"
                 >
-                  <div>
-                    <div className="flex flex-row gap-4 items-center">
-                      <a className="font-normal text-lg">{item.namaPeminjam}</a>
-                      <div
-                        className={`inline-flex items-center text-[12px] rounded-3xl w-auto px-3 py-1 ${statusStyles[item.status] || "bg-gray-100 text-gray-600"}`}
-                      >
-                        {item.status}
+                  <div className="w-full">
+                    <div className="flex flex-col lg:flex-row lg:items-center">
+                      <div className="flex flex-col mb-3 lg:border-none border-b border-b-slate-200">
+                        <div className="flex flex-row gap-4">
+                          <a className="font-normal text-lg">
+                            {item.namaPeminjam}
+                          </a>
+                          <div
+                            className={`inline-flex items-center text-[12px] rounded-3xl w-auto px-3 ${statusStyles[item.status] || "bg-gray-100 text-gray-600"}`}
+                          >
+                            {item.status}
+                          </div>
+                        </div>
+                        <a className="text-slate-500 text-[13px] mb-2">
+                          {item.keperluan}
+                        </a>
+                      </div>
+                      <div className="flex gap-3 lg:mt-0 lg:ml-auto mr-0">
+                        <span
+                          className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[17px]"
+                          onClick={() => setSelectedBooking(item)}
+                        >
+                          info
+                        </span>
+                        <Link
+                          className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[17px]"
+                          to={`/editStatus/${item.id}`}
+                        >
+                          edit
+                        </Link>
+                        <span
+                          className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[17px]"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          delete
+                        </span>
                       </div>
                     </div>
-                    <a className="text-slate-500 text-[13px]">
-                      {item.keperluan}
-                    </a>
-                    <div className="flex flex-row flex-wrap lg:gap-10 gap-4 py-2">
+                    <div className="hidden lg:flex flex-row flex-wrap lg:gap-10 gap-6 py-2">
                       <div className="flex text-slate-700 gap-2">
                         <span className="material-symbols-outlined text-sm">
                           location_on
@@ -398,27 +423,6 @@ export default function Dashboard() {
                         <p className="text-sm">{item.jamPinjam}</p>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex gap-5 mt-3">
-                    <span
-                      className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => setSelectedBooking(item)}
-                    >
-                      info
-                    </span>
-                    <Link
-                      className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      to={`/editStatus/${item.id}`}
-                    >
-                      edit
-                    </Link>
-                    <span
-                      className="material-symbols-outlined text-slate-500 cursor-pointer hover:text-slate-700 text-[20px]"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      delete
-                    </span>
                   </div>
                 </div>
               ))
@@ -466,13 +470,8 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <p className="text-gray-500">Status</p>
-                <span
-                  className={`inline-block mt-1 px-3 py-1 rounded-full text-xs
-                ${statusStyles[selectedBooking.status]}`}
-                >
-                  {selectedBooking.status}
-                </span>
+                <p className="text-gray-500">Lokasi</p>
+                <p>{selectedBooking.lokasiPinjam}</p>
               </div>
 
               <div>
@@ -481,8 +480,31 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <p className="text-gray-500">Lokasi</p>
-                <p>{selectedBooking.lokasiPinjam}</p>
+                <p className="text-gray-500">Status</p>
+                <span>
+                  {historyLoading ? (
+                    <p>Memuat riwayat...</p>
+                  ) : history.length === 0 ? (
+                    <p className="bg-yellow-100 text-yellow-600 border border-yellow-200 inline-block px-3 py-1 rounded-full text-xs w-20 mt-2">
+                      Pending
+                    </p>
+                  ) : (
+                    <ul className="text-sm">
+                      {history.map((h) => (
+                        <li key={h.id} className="flex flex-col">
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs w-20 mt-2 ${statusStyles[selectedBooking.status]}`}
+                          >
+                            {h.status}
+                          </span>
+                          <span className="text-gray-400 text-[12px] ml-2 mt-2">
+                            {new Date(h.changedAt).toLocaleString()}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </span>
               </div>
 
               <div>
@@ -496,44 +518,40 @@ export default function Dashboard() {
               </div>
 
               {selectedBooking.room && (
-                <div className="md:col-span-2 mt-4">
-                  <p className="text-gray-500 mb-1 font-medium">
+                <div className="md:col-span-2 mt-2">
+                  <p className="text-gray-500 mb-2 font-medium">
                     Detail Ruangan
                   </p>
-                  <p className="flex gap-4 font-medium text-gray-700">
-                    <span>{selectedBooking.room.nama}</span>
-                    <span>Status: {selectedBooking.room.status}</span>
-                    <span>Tipe: {selectedBooking.room.tipe}</span>
-                    <span>Kapasitas: {selectedBooking.room.kapasitas}</span>
+                  <p className="flex flex-row flex-wrap lg:gap-12 gap-3 font-medium text-gray-500">
+                    <span className="text-gray-700">
+                      {selectedBooking.room.nama}
+                    </span>
+                    <span>
+                      Status:{" "}
+                      <span className="text-gray-700">
+                        {selectedBooking.room.status}
+                      </span>
+                    </span>
+                    <span>
+                      Tipe:{" "}
+                      <span className="text-gray-700">
+                        {selectedBooking.room.tipe}
+                      </span>
+                    </span>
+                    <span>
+                      Kapasitas:{" "}
+                      <span className="text-gray-700">
+                        {selectedBooking.room.kapasitas}
+                      </span>
+                    </span>
                   </p>
                 </div>
-              )}
-              {historyLoading ? (
-                <p>Memuat riwayat...</p>
-              ) : history.length === 0 ? (
-                <p className="text-gray-500 text-sm">
-                  Belum ada perubahan status
-                </p>
-              ) : (
-                <ul className="text-sm border border-gray-200 rounded-lg p-2 max-h-40 overflow-y-auto">
-                  {history.map((h) => (
-                    <li
-                      key={h.id}
-                      className="flex justify-between py-1 border-b last:border-b-0"
-                    >
-                      <span>{h.status}</span>
-                      <span className="text-gray-400">
-                        {new Date(h.changedAt).toLocaleString()}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
               )}
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
               <button
-                onClick={() => navigate(`/editBooking/${selectedBooking.id}`)}
+                onClick={() => navigate(`/editStatus/${selectedBooking.id}`)}
                 className="px-4 py-2 rounded-lg bg-[#547792] text-white text-sm hover:opacity-90"
               >
                 Edit

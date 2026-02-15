@@ -84,7 +84,7 @@ export default function BuildingRoomsUser() {
         )}
 
         <div
-          className={`flex flex-col fixed top-0 left-0 h-full w-64 bg-slate-100 p-4 z-50 transform transition-transform duration-300 md:hidden
+          className={`flex flex-col fixed top-0 left-0 h-full w-64 bg-white p-4 z-50 transform transition-transform duration-300 md:hidden
           ${open ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div className="mb-8">
@@ -93,7 +93,7 @@ export default function BuildingRoomsUser() {
           </div>
 
           <div
-            className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+            className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
             onClick={() => navigate("/dashboardUser")}
           >
             <span className="material-symbols-outlined">space_dashboard</span>
@@ -105,16 +105,9 @@ export default function BuildingRoomsUser() {
             <a className="text-white">Daftar Gedung</a>
           </div>
 
-          <div
-            className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-            onClick={() => navigate("/historyPage")}
-          >
-            <span className="material-symbols-outlined">history</span>
-            <a className="text-black">Riwayat</a>
-          </div>
           <button
             onClick={() => navigate("/bookingForm")}
-            className="mt-auto mb-5 flex justify-center items-center bg-[#547792] p-2 gap-2 rounded-lg cursor-pointer text-white hover:opacity-90 transition"
+            className="mt-auto mb-5 flex justify-center items-center bg-[#547792] duration-300 p-2 gap-2 rounded-lg cursor-pointer text-white hover:opacity-90 transition"
           >
             <span className="material-symbols-outlined">add_circle</span>
             <span className="text-[15px]">Tambah peminjaman</span>
@@ -129,14 +122,14 @@ export default function BuildingRoomsUser() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-col fixed top-0 left-0 w-[300px] bg-slate-100 p-4 h-screen">
+      <div className="hidden lg:flex flex-col fixed top-0 left-0 w-[300px] bg-white border-r border-r-slate-200 p-4 h-screen">
         <div className="mb-8">
-          <h3 className="font-bold text-[30px] mb-3">Roomify</h3>
+          <h3 className="font-bold text-[25px] mb-3">Roomify</h3>
           <a>Campus Room Reservation System</a>
         </div>
 
         <div
-          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
           onClick={() => navigate("/dashboardUser")}
         >
           <span className="material-symbols-outlined">space_dashboard</span>
@@ -149,7 +142,7 @@ export default function BuildingRoomsUser() {
         </div>
 
         <div
-          className="hover:bg-[#547792] p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
+          className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
           onClick={() => navigate("/historyPage")}
         >
           <span className="material-symbols-outlined">history</span>
@@ -197,8 +190,8 @@ export default function BuildingRoomsUser() {
                   className={`px-4 py-2 rounded-xl border text-sm
                   ${
                     filters.tipe === item
-                      ? "bg-[#547792] text-white hover:bg-[#435d70]"
-                      : "bg-white text-gray-700 hover:bg-slate-300"
+                      ? "bg-[#547792] text-white hover:bg-[#435d70] border-r border-r-slate-200"
+                      : "bg-white text-gray-700 hover:bg-slate-300 border-r border-r-slate-200"
                   }
                 `}
                 >
@@ -213,7 +206,7 @@ export default function BuildingRoomsUser() {
               const { ruangKosong, ruangTerpakai } = getStats(gedung.rooms);
 
               return (
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-2xl transition-all duration-300 ease-out hover:shadow-md hover:-translate-y-1 p-6 shadow-sm">
                   <div className="flex items-start gap-3">
                     <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-xl">
                       <span className="material-symbols-outlined">domain</span>
@@ -238,7 +231,7 @@ export default function BuildingRoomsUser() {
                     {gedung.rooms.map((room, idx) => (
                       <div
                         key={idx}
-                        className="bg-gray-50 rounded-xl py-3 px-1 hover:bg-gray-100 cursor-pointer relative"
+                        className="bg-gray-50 rounded-xl py-3 px-1 hover:bg-gray-100 transition-colors duration-300 cursor-pointer relative"
                       >
                         <span
                           className={`lg:hidden absolute top-2 right-2 w-2.5 h-2.5 rounded-full ${room.status === "kosong" ? "bg-green-500" : "bg-red-500"}`}

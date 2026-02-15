@@ -23,6 +23,7 @@ export default function Dashboard() {
   type PeminjamanItem = {
     id: number;
     namaPeminjam: string;
+    noKontak: string;
     status: "Pending" | "Disetujui" | "Ditolak";
     keperluan: string;
     lokasiPinjam: string;
@@ -93,6 +94,7 @@ export default function Dashboard() {
           return {
             id: item.id,
             namaPeminjam: item.namaPeminjam,
+            noKontak: item.noKontak,
             status: item.status,
             keperluan: item.keperluan,
             lokasiPinjam:
@@ -470,6 +472,11 @@ export default function Dashboard() {
               </div>
 
               <div>
+                <p className="text-gray-500">No Kontak</p>
+                <p className="font-medium">{selectedBooking.noKontak}</p>
+              </div>
+
+              <div>
                 <p className="text-gray-500">Lokasi</p>
                 <p>{selectedBooking.lokasiPinjam}</p>
               </div>
@@ -477,6 +484,16 @@ export default function Dashboard() {
               <div>
                 <p className="text-gray-500">Keperluan</p>
                 <p>{selectedBooking.keperluan}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Tanggal</p>
+                <p>{selectedBooking.tglPinjam}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Jam</p>
+                <p>{selectedBooking.jamPinjam}</p>
               </div>
 
               <div>
@@ -505,16 +522,6 @@ export default function Dashboard() {
                     </ul>
                   )}
                 </span>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Tanggal</p>
-                <p>{selectedBooking.tglPinjam}</p>
-              </div>
-
-              <div>
-                <p className="text-gray-500">Jam</p>
-                <p>{selectedBooking.jamPinjam}</p>
               </div>
 
               {selectedBooking.room && (

@@ -9,11 +9,6 @@ interface Building {
 interface Room {
   id: number;
   nama: string;
-  status: string;
-  tipe: string;
-  kapasitas: number;
-  buildingId?: number;
-  building?: Building;
 }
 
 interface StatusHistory {
@@ -151,8 +146,6 @@ export default function EditStatus() {
   };
 
   const getBuildingName = () => {
-    if (booking?.building?.nama) return booking.building.nama;
-    if (booking?.room?.building?.nama) return booking.room.building.nama;
     if (booking?.buildingId && buildingNames[booking.buildingId])
       return buildingNames[booking.buildingId];
     return `Building ID: ${booking?.buildingId || "-"}`;
@@ -182,8 +175,6 @@ export default function EditStatus() {
       if (!res.ok) {
         if (res.status === 403)
           throw new Error("Akses Ditolak: Anda bukan Admin.");
-        if (res.status === 401)
-          throw new Error("Sesi berakhir, silakan login ulang.");
 
         const errorText = await res.text();
         const errorData = errorText ? JSON.parse(errorText) : {};
@@ -238,11 +229,9 @@ export default function EditStatus() {
 
       <div className="mb-10">
         <h3 className="font-semibold text-[25px]">Edit Status Peminjaman</h3>
-        <p className="mt-2 text-slate-600">Ubah status peminjaman ruangan</p>
       </div>
 
-      <form className="space-y-6" onSubmit={handleUpdate}>
-      
+      <form className="space-y-7" onSubmit={handleUpdate}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -258,18 +247,18 @@ export default function EditStatus() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-b-slate-200">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Gedung
             </label>
-            <p className="text-lg">{getBuildingName()}</p>
+            <p className="text-lg lg:mb-5">{getBuildingName()}</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Ruangan
             </label>
-            <p className="text-lg">{booking?.room?.nama || "N/A"}</p>
+            <p className="text-lg lg:mb-5 mb-4">{booking?.room?.nama || "N/A"}</p>
           </div>
         </div>
 
@@ -301,24 +290,26 @@ export default function EditStatus() {
           <p className="text-lg">{booking?.keperluan}</p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status
-          </label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          >
-            <option value="Pending">Pending</option>
-            <option value="Disetujui">Disetujui</option>
-            <option value="Ditolak">Ditolak</option>
-          </select>
-        </div>
+        <div className="flex flex-row gap-10">
+          <div className="mr-5">
+            <h4 className="font-semibold text-gray-700 mb-2">Riwayat Status</h4>
+            {booking?.id && <StatusHistoryDisplay bookingId={booking.id} />}
+          </div>
 
-        <div>
-          <h4 className="font-semibold text-gray-700 mb-2">Riwayat Status</h4>
-          {booking?.id && <StatusHistoryDisplay bookingId={booking.id} />}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+            >
+              <option value="Pending">Pending</option>
+              <option value="Disetujui">Disetujui</option>
+              <option value="Ditolak">Ditolak</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex justify-end gap-3">

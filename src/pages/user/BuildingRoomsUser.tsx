@@ -141,13 +141,6 @@ export default function BuildingRoomsUser() {
           <a className="text-white">Daftar Gedung</a>
         </div>
 
-        <div
-          className="hover:bg-[#547792] transition-colors duration-300 p-4 mb-5 rounded-lg flex gap-4 items-center cursor-pointer text-black"
-          onClick={() => navigate("/historyPage")}
-        >
-          <span className="material-symbols-outlined">history</span>
-          <a className="text-black">Riwayat</a>
-        </div>
         <button
           onClick={() => navigate("/BookingForm")}
           className="mt-auto flex justify-center items-center gap-2 bg-[#547792] p-4 rounded-lg cursor-pointer text-white hover:opacity-90 transition"

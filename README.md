@@ -165,3 +165,27 @@ Make sure:
 1. The backend is running
 2. The URL in `VITE_API_URL` is correct
 3. CORS is configured in the backend
+
+---
+
+## Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a new feature branch
+3. Commit changes
+4. Open a pull request
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+## Credits / Author
+
+Developed by Zahrin Savana Khadijah
+Frontend Developer – Roomify Project
